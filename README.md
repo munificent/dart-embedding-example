@@ -1,6 +1,6 @@
 # How to use this
 
-_Updated 07/24/2021 - Updated to Dart 2.13.4_
+_Updated 11/30/2021 to Dart 2.15.0-268.8.beta_
 
 You can clone this repo and pull out the dart directory which contains all the headers and libraries
 you'll need (see Other Notes about some gotchas with these libs).
@@ -193,6 +193,16 @@ static_library("libdart") {
 }
 ```
 
+In the main _BUILD.gn_ file, add:
+
+```
+group("libdart") {
+  deps = [ "runtime/bin:libdart" ]
+}
+```
+
+(This isn't really necessary, but it makes it easier to run the build).
+
 In _build/config/compiler/BUILD.gn_ change the following (around line 424):
 
 ```diff
@@ -215,6 +225,19 @@ In _build/config/compiler/BUILD.gn_ change the following (around line 424):
       "_SCL_SECURE_NO_DEPRECATE",
     ]
 ```
+
+### Build the library
+
+Build the static library by running:
+
+```sh
+python tools/build.py --no-goma -m release libdart
+```
+
+Copy the resulting `xcodebuild/ReleaseX64/obj/runtime/bin/libdart.a` into this
+repo at `dart/lib/mac-release-x64/libdart.a`.
+
+**TODO: Update instructions for other platforms.**
 
 # Draining the Message Queue
 
