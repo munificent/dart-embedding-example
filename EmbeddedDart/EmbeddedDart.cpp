@@ -1,11 +1,11 @@
 // DartTest.cpp : Defines the entry point for the console application.
 //
-#include "stdafx.h"
+//#include "stdafx.h"
 
 #include <iostream>
 #include <stdarg.h>
 #include <stdio.h>
-#include <direct.h>
+//#include <direct.h>
 
 #include "include/dart_api.h"
 #include "include/dart_tools_api.h"
@@ -93,16 +93,18 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc, bool* auto_setup_sco
 
 Dart_Handle Dart_Error(const char* format, ...)
 {
-    char message[512];
+  // TODO: Fix to not call Windows-specific vsprintf_s.
+//    char message[512];
+//
+//    va_list valist;
+//    va_start(valist, format);
+//
+//    vsprintf_s(message, format, valist);
+//    auto handle = Dart_NewApiError(message);
+//    va_end(valist);
 
-    va_list valist;
-    va_start(valist, format);
-
-    vsprintf_s(message, format, valist);
-    auto handle = Dart_NewApiError(message);
-    va_end(valist);
-
-    return handle;
+//    return handle;
+  return Dart_Null();
 }
 
 Dart_Handle LibraryTagHandler(Dart_LibraryTag tag, Dart_Handle library, Dart_Handle url)
@@ -419,7 +421,8 @@ static bool OnIsolateInitialize(void** child_callback_data, char** error)
     return *error == nullptr;
 
 failed:
-    *error = _strdup(Dart_GetError(result));
+  // TODO(rnystrom): Fix to not call Windows-specific function.
+//    *error = _strdup(Dart_GetError(result));
     Dart_ExitScope();
     return false;
 }
