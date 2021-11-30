@@ -6,3 +6,5 @@ x64/
 Debug/
 .dart_tool/
 .packages
+DartEmbeddingExample.xcodeproj/project.xcworkspace/
+DartEmbeddingExample.xcodeproj/xcuserdata/
