@@ -93,24 +93,49 @@ In _runtime/bin/BUILD.gn_ add the following:
 
 ```
 static_library("libdart") {
+  use_product_mode = dart_runtime_mode == "release"
+
+  configs += [
+    "..:dart_arch_config",
+    "..:dart_config",
+    "..:dart_os_config",
+  ]
+  if (use_product_mode) {
+    configs += [ "..:dart_product_config" ]
+  } else {
+    configs += [ "..:dart_maybe_product_config" ]
+  }
+
   deps = [
-    ":standalone_dart_io",
-    "..:libdart_jit",
-    "../platform:libdart_platform_jit",
-    ":dart_snapshot_cc",
-    ":dart_kernel_platform_cc",
+    ":crashpad",
     "//third_party/boringssl",
     "//third_party/zlib",
+    # extra_deps in dart_executable("dart") call:
+    ":dart_snapshot_cc",
+    "..:libdart_jit",
+    "../platform:libdart_platform_jit",
   ]
+  if (use_product_mode) {
+    deps += [ ":standalone_dart_io_product" ]
+  } else {
+    deps += [ ":standalone_dart_io" ]
+  }
   if (dart_runtime_mode != "release") {
     deps += [ "../observatory:standalone_observatory_archive" ]
   }
-
-  complete_static_lib = true
-
+  if (!exclude_kernel_service) {
+    deps += [ ":dart_kernel_platform_cc" ]
+  }
   if (dart_use_tcmalloc) {
     deps += [ "//third_party/tcmalloc" ]
   }
+
+  defines = []
+  if (exclude_kernel_service) {
+    defines += [ "EXCLUDE_CFE_AND_KERNEL_PLATFORM" ]
+  }
+
+  complete_static_lib = true
 
   include_dirs = [
     "..",
@@ -118,23 +143,52 @@ static_library("libdart") {
   ]
 
   sources = [
-    "builtin.cc",
+    "dart_embedder_api_impl.cc",
     "error_exit.cc",
     "error_exit.h",
-    "vmservice_impl.cc",
-    "vmservice_impl.h",
+    "main_options.cc",
+    "main_options.h",
+    "options.cc",
+    "options.h",
     "snapshot_utils.cc",
     "snapshot_utils.h",
-    "gzip.cc",
-    "gzip.h",
+    "vmservice_impl.cc",
+    "vmservice_impl.h",
+    # extra_sources in dart_executable("dart") call:
+    "builtin.cc",
+    "dartdev_isolate.cc",
+    "dartdev_isolate.h",
     "dfe.cc",
     "dfe.h",
+    "gzip.cc",
+    "gzip.h",
     "loader.cc",
     "loader.h",
-    "dart_embedder_api_impl.cc",
+    "main.cc",
   ]
+
   if (dart_runtime_mode == "release") {
     sources += [ "observatory_assets_empty.cc" ]
+  }
+
+  if (is_win) {
+    ldflags = [ "/EXPORT:Dart_True" ]
+  } else {
+    # Adds all symbols to the dynamic symbol table, not just used ones.
+    # This is needed to make native extensions work. It is also needed to get
+    # symbols in VM-generated backtraces and profiles.
+    ldflags = [ "-rdynamic" ]
+  }
+
+  if (is_win) {
+    libs = [
+      "iphlpapi.lib",
+      "psapi.lib",
+      "ws2_32.lib",
+      "Rpcrt4.lib",
+      "shlwapi.lib",
+      "winmm.lib",
+    ]
   }
 }
 ```
