@@ -32,6 +32,7 @@ enum MessageFlags {
   kSetEventMaskCommand = 12,
   kListeningSocket = 16,
   kPipe = 17,
+  kSignalSocket = 18,
 };
 
 // clang-format off
@@ -54,6 +55,8 @@ enum MessageFlags {
      (data & ~(1 << kInEvent | 1 << kOutEvent | 1 << kCloseEvent)) == 0)
 #define IS_LISTENING_SOCKET(data)                                              \
     ((data & (1 << kListeningSocket)) != 0)  // NOLINT
+#define IS_SIGNAL_SOCKET(data)                                                 \
+    ((data & (1 << kSignalSocket)) != 0)  // NOLINT
 #define TOKEN_COUNT(data) (data & ((1 << kCloseCommand) - 1))
 // clang-format on
 
@@ -582,15 +585,15 @@ class DescriptorInfoMultipleMixin : public DI {
 }  // namespace dart
 
 // The event handler delegation class is OS specific.
-#if defined(HOST_OS_ANDROID)
+#if defined(DART_HOST_OS_ANDROID)
 #include "bin/eventhandler_android.h"
-#elif defined(HOST_OS_FUCHSIA)
+#elif defined(DART_HOST_OS_FUCHSIA)
 #include "bin/eventhandler_fuchsia.h"
-#elif defined(HOST_OS_LINUX)
+#elif defined(DART_HOST_OS_LINUX)
 #include "bin/eventhandler_linux.h"
-#elif defined(HOST_OS_MACOS)
+#elif defined(DART_HOST_OS_MACOS)
 #include "bin/eventhandler_macos.h"
-#elif defined(HOST_OS_WINDOWS)
+#elif defined(DART_HOST_OS_WINDOWS)
 #include "bin/eventhandler_win.h"
 #else
 #error Unknown target os.

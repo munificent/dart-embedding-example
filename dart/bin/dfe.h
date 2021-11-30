@@ -92,7 +92,8 @@ class DFE {
   // valid kernel file, false otherwise.
   void ReadScript(const char* script_uri,
                   uint8_t** kernel_buffer,
-                  intptr_t* kernel_buffer_size) const;
+                  intptr_t* kernel_buffer_size,
+                  bool decode_uri = true) const;
 
   bool KernelServiceDillAvailable() const;
 
@@ -103,7 +104,8 @@ class DFE {
   // was returned.
   static bool TryReadKernelFile(const char* script_uri,
                                 uint8_t** kernel_buffer,
-                                intptr_t* kernel_buffer_size);
+                                intptr_t* kernel_buffer_size,
+                                bool decode_uri = true);
 
   // We distinguish between "intent to use Dart frontend" vs "can actually
   // use Dart frontend". The method UseDartFrontend tells us about the
@@ -138,11 +140,11 @@ class PathSanitizer {
   const char* sanitized_uri() const;
 
  private:
-#if defined(HOST_OS_WINDOWS)
+#if defined(DART_HOST_OS_WINDOWS)
   std::unique_ptr<char[]> sanitized_uri_;
 #else
   const char* sanitized_uri_;
-#endif  // defined(HOST_OS_WINDOWS)
+#endif  // defined(DART_HOST_OS_WINDOWS)
 
   DISALLOW_COPY_AND_ASSIGN(PathSanitizer);
 };

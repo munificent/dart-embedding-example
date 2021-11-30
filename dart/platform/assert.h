@@ -30,7 +30,9 @@ class DynamicAssertionHelper {
       : file_(file), line_(line) {}
 
  protected:
-  void Print(const char* format, va_list arguments, bool will_abort = false);
+  void Print(const char* format,
+             va_list arguments,
+             bool will_abort = false) const;
 
   const char* const file_;
   const int line_;
@@ -42,7 +44,7 @@ class Assert : public DynamicAssertionHelper {
  public:
   Assert(const char* file, int line) : DynamicAssertionHelper(file, line) {}
 
-  DART_NORETURN void Fail(const char* format, ...) PRINTF_ATTRIBUTE(2, 3);
+  DART_NORETURN void Fail(const char* format, ...) const PRINTF_ATTRIBUTE(2, 3);
 
   template <typename T>
   T NotNull(const T p);
@@ -52,7 +54,7 @@ class Expect : public DynamicAssertionHelper {
  public:
   Expect(const char* file, int line) : DynamicAssertionHelper(file, line) {}
 
-  void Fail(const char* format, ...) PRINTF_ATTRIBUTE(2, 3);
+  void Fail(const char* format, ...) const PRINTF_ATTRIBUTE(2, 3);
 
 #if defined(TESTING)
   template <typename E, typename A>
@@ -339,7 +341,15 @@ void Expect::Null(const T p) {
 
 #define EXPECT_NULLPTR(ptr) dart::Expect(__FILE__, __LINE__).Null((ptr))
 
-#define FAIL(error) dart::Expect(__FILE__, __LINE__).Fail("%s", error)
+#if defined(_MSC_VER)
+#define FAIL(format, ...)                                                      \
+  dart::Expect(__FILE__, __LINE__).Fail(format, __VA_ARGS__);
+#else
+#define FAIL(format, ...)                                                      \
+  dart::Expect(__FILE__, __LINE__).Fail(format, ##__VA_ARGS__);
+#endif
+
+// Leaving old non-varargs versions to avoid having to rewrite all uses.
 
 #define FAIL1(format, p1) dart::Expect(__FILE__, __LINE__).Fail(format, (p1))
 
